@@ -1,0 +1,36 @@
+#!/bin/dash
+
+BASEDIR="$(dirname $0)"
+cd "$BASEDIR"
+
+DOT_DIR="$HOME/dotfiles"
+XDG_CONFIG_HOME="$HOME/.config"
+
+print_installed() {
+	printf "[\033[01;32m+\033[0m] \033[33m"$1"\033[0m \033[32mINSTALLED\033[0m!\n"
+}
+
+install_config() {
+	for dir in $DOT_DIR/.config/*; do
+
+		# create all the dirs
+		[ -z "$XDG_CONFIG_HOME" ] && exit 1
+		target="$XDG_CONFIG_HOME/${dir##*.config/}"
+		mkdir -p "$target"
+
+		# link all the files
+		for file in $dir/*; do
+			ln -sf "$file" "$target" && print_installed "${file##*.config/}"
+		done
+	done
+}
+
+install_home() {
+	ln -sf "$DOT_DIR/.bashrc" "$HOME" && print_installed "bashrc"
+	ln -sf "$DOT_DIR/.xinitrc" "$HOME" && print_installed "xinitrc"
+	ln -sf "$DOT_DIR/.gdbinit" "$HOME" && print_installed "gdbinit"
+	ln -sf "$DOT_DIR/.gitconfig" "$HOME" && print_installed "gitconfig"
+}
+
+install_home
+install_config
