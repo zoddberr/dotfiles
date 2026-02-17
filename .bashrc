@@ -5,6 +5,11 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+set -o vi
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export PATH="$PATH:$HOME/.local/bin"
+
 # everyone likes colors!
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
@@ -23,3 +28,4 @@ alias n='nnn -c'
 
 # general aliases
 alias sdn='sudo poweroff'
+eval "$(starship init bash)"

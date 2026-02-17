@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 
 bat_colored() {
 	local id="$1"

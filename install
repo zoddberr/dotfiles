@@ -30,6 +30,8 @@ install_home() {
 	ln -sf "$DOT_DIR/.xinitrc" "$HOME" && print_installed "xinitrc"
 	ln -sf "$DOT_DIR/.gdbinit" "$HOME" && print_installed "gdbinit"
 	ln -sf "$DOT_DIR/.gitconfig" "$HOME" && print_installed "gitconfig"
+	ln -sf "$DOT_DIR/.zprofile" "$HOME" && print_installed "zprofile"
+	ln -sf "$DOT_DIR/.zshrc" "$HOME" && print_installed "zshrc"
 }
 
 install_home
