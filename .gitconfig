@@ -1,0 +1,6 @@
+[include]
+	path = ~/.gitconfig.local
+[alias]
+	st = status
+	ll = log --oneline
+	fx = commit --amend --no-edit
