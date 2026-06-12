@@ -1,0 +1,10 @@
+profile {
+    # This profile enables the laptop screen when no external monitors are plugged in
+    output eDP-1 enable
+}
+
+profile {
+    # This profile configures your setup when an external monitor (like HDMI-A-1) is connected
+    output eDP-1 disable
+    output HDMI-A-2 enable
+}

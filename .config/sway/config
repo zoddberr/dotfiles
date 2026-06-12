@@ -166,3 +166,4 @@ bar {
 include /etc/sway/config.d/*
 
 exec_always kanshi
+exec_always gammastep
