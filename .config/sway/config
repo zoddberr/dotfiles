@@ -1,0 +1,168 @@
+# Vars
+
+# alt as mod
+set $mod Mod1
+
+# vim keys
+set $left h
+set $down j
+set $up k
+set $right l
+
+# default progs
+set $browser firefox
+set $term st
+set $menu wmenu-run
+
+set $screenshots_folder ~/pix/screenshots
+
+# Output
+
+output HDMI-A-2 mode 1920x1080@100Hz pos 1920 0
+
+# Input
+
+input * {
+    xkb_layout "us,de,ru"
+    xkb_variant ""
+    xkb_options "grp:win_space_toggle"
+}
+
+input "type:keyboard" {
+    # repeat_delay: how long you hold the key before it repeats (in milliseconds)
+    # repeat_rate: how many times the key fires per second
+    repeat_delay 220
+    repeat_rate 40
+}
+
+input 1386:768:Wacom_Bamboo_One_S_Pen map_to_output HDMI-A-2
+
+# Idle
+
+exec_always swayidle -w \
+        timeout 600 'swaylock -f -c 000000' \
+        timeout 900 'swaymsg "output * power off"' \
+        resume 'swaymsg "output * power on"'
+
+for_window [class=".*"] inhibit_idle fullscreen
+for_window [app_id=".*"] inhibit_idle fullscreen
+
+# Workspace Rules
+
+assign [app_id="emacs"] workspace 1
+assign [app_id="firefox"] workspace 2
+
+# Binds
+
+# basics
+bindsym $mod+Shift+Return exec $term
+bindsym $mod+Shift+c kill
+bindsym $mod+p exec $menu
+
+bindsym $mod+Shift+q exit sway
+bindsym $mod+Shift+r reload
+
+# moving
+bindsym $mod+$left focus left
+bindsym $mod+$down focus down
+bindsym $mod+$up focus up
+bindsym $mod+$right focus right
+
+bindsym $mod+Shift+$left move left
+bindsym $mod+Shift+$down move down
+bindsym $mod+Shift+$up move up
+bindsym $mod+Shift+$right move right
+
+# workspaces
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+bindsym $mod+0 workspace number 10
+
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+bindsym $mod+Shift+6 move container to workspace number 6
+bindsym $mod+Shift+7 move container to workspace number 7
+bindsym $mod+Shift+8 move container to workspace number 8
+bindsym $mod+Shift+9 move container to workspace number 9
+bindsym $mod+Shift+0 move container to workspace number 10
+
+# resize
+mode "resize" {
+    # left will shrink the containers width
+    # right will grow the containers width
+    # up will shrink the containers height
+    # down will grow the containers height
+    bindsym $left resize shrink width 10px
+    bindsym $down resize grow height 10px
+    bindsym $up resize shrink height 10px
+    bindsym $right resize grow width 10px
+
+    # Return to default mode
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+# layout
+
+bindsym $mod+f fullscreen
+bindsym $mod+Shift+space floating toggle
+
+floating_modifier $mod normal
+
+# special keys
+bindsym --locked XF86AudioMute exec pactl set-sink-mute \@DEFAULT_SINK@ toggle
+bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume \@DEFAULT_SINK@ -5%
+bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume \@DEFAULT_SINK@ +5%
+bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ toggle
+
+bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
+
+bindsym Print exec grim -g "$(slurp)" - | tee $screenshots_folder/$(date +%Y-%m-%d_%H-%M-%S).png | wl-copy
+
+# personal
+bindsym $mod+e exec emacsclient -c
+bindsym $mod+b exec firefox
+
+bindsym $mod+Shift+p exec playerctl --player=spotify play-pause
+bindsym $mod+Shift+semicolon exec playerctl --player=spotify previous
+bindsym $mod+Shift+apostrophe exec playerctl --player=spotify next
+
+# Exit Dialogue
+
+set $mode_system System (s)leep, (r)eboot, (p)oweroff
+mode "$mode_system" {
+    bindsym r exec systemctl reboot, mode "default"
+    bindsym p exec systemctl poweroff, mode "default"
+    bindsym s exec systemctl suspend, mode "default"
+
+    # back to normal: Enter or Escape
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+bindsym $mod+Shift+x mode "$mode_system"
+
+# Status bar
+
+bar {
+    status_command i3status-rs
+}
+
+# Misc
+
+include /etc/sway/config.d/*
+
+exec_always kanshi
