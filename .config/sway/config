@@ -11,7 +11,7 @@ set $right l
 
 # default progs
 set $browser firefox
-set $term st
+set $term foot
 set $menu wmenu-run
 
 set $screenshots_folder ~/pix/screenshots
