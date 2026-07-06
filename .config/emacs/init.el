@@ -13,6 +13,12 @@
 
 (setq ring-bell-function 'ignore)
 
+;; For the very first frame
+(add-to-list 'initial-frame-alist '(font . "UbuntuMono Nerd Font-15"))
+
+;; For all subsequent frames you open (e.g., emacsclient)
+(add-to-list 'default-frame-alist '(font . "UbuntuMono Nerd Font-15"))
+
 ;; redirect automatic UI customizations to a separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 
@@ -62,6 +68,14 @@
     (insert ":END:\n")
     (insert (format "%s\n" translation))))
 
+(defun my/reload-theme ()
+(interactive)
+(disable-theme 'voidstar)
+(load-file (expand-file-name "themes/voidstar-theme.el" user-emacs-directory))
+(load-theme 'voidstar t))
+
+(global-set-key (kbd "<f5>") 'my/reload-theme)
+
 ;; EVIL MODE
 (use-package evil
   :init
@@ -79,9 +93,8 @@
   (evil-collection-init))
 
 ;; THEME
-(use-package gruvbox-theme
-  :config
-  (load-theme 'gruvbox-dark-hard t)) 
+(add-to-list 'custom-theme-load-path "~/.config/emacs/themes/")
+(load-theme 'modus-vivendi t)
 
 ;; BINDINGS
 (use-package general
@@ -124,6 +137,25 @@
    "wK" 'evil-window-move-very-top
    "wL" 'evil-window-move-far-right
 
+   ;; passwords (pass)
+   "py" 'password-store-copy
+   "pg" 'password-store-generate-no-symbols
+   "pe" 'password-store-edit
+
+   ;; compile / code
+   "cc" 'compile
+   "cr" 'recompile
+   "ck" 'kill-compilation
+
+   ;; dired
+   "dj" 'dired-jump
+   :major-modes 'dired-mode
+   "r" 'wdired-change-to-wdired-mode
+
+   ;; org
+   "na" 'org-agenda
+   "nc" 'org-capture
+
    ;; anki
    :major-modes 'org-mode
    "ai" 'my/anki-insert-flat-german-note
@@ -145,6 +177,7 @@
   :config
   (define-key vertico-map (kbd "C-j") 'vertico-next)
   (define-key vertico-map (kbd "C-k") 'vertico-previous)
+
   (define-key vertico-map (kbd "DEL") #'vertico-directory-delete-char))
 
 (use-package marginalia
@@ -165,14 +198,60 @@
   :init
   (global-corfu-mode))
 
+;; PASS
+(use-package pass)
+
+;; ask for encryption password inside emacs
+(setq epa-pinentry-mode 'loopback)
+
+;; DIRED
+(use-package dired
+  :ensure nil
+  :custom
+  (dired-listing-switches "-alh --group-directories-first")
+  (dired-kill-when-opening-new-dired-buffer t)
+  (dired-dwim-target t))
+
 ;; ORG MODE
 (use-package org
   :ensure nil
   :custom
+
+  (org-directory "~/Notes/")
+  (org-agenda-files '("~/Notes/agenda.org"
+		      "~/Notes/habits.org"))
+  (org-default-notes-file "~/Notes/inbox.org")
+  
   (org-startup-indented t)
   (org-hide-leading-stars t)
   (org-hide-emphasis-markers t)
   (org-startup-folded 'content))
+
+(with-eval-after-load 'org
+  (add-to-list 'org-modules 'org-habit)
+  (setq org-habit-show-habits t)
+  (setq org-return-follows-link t)
+
+  (setq org-preview-latex-default-process 'dvisvgm)
+  (plist-put org-format-latex-options :scale 1.8)
+  (setq org-startup-with-latex-preview t)
+
+  (setq org-capture-templates
+	'(("t" "Task" :entry
+	   (file+headline "~/Notes/inbox.org" "Inbox")
+	   "* TODO %?\n %U"))))
+
+(use-package org-fragtog
+  :ensure t
+  :after org
+  :hook (org-mode . org-fragtog-mode))
+
+(use-package org-bullets
+  :after org
+  :custom
+  (org-bullets-bullet-list '("§" "*" "*" "*" "*" "*"))
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 ;; anki integration
 (use-package anki-editor
@@ -180,3 +259,67 @@
   :config
   (setq anki-editor-default-deck "German-Wordlist"))
 
+;; MAGIT
+(use-package magit
+  :commands magit-status)
+
+;; PDF-TOOLS
+(use-package pdf-tools
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page)
+  :hook
+  (pdf-view-mode . (lambda ()
+                     (display-line-numbers-mode -1))))
+
+;;;; C
+;;(defun my/c-mode-setup()
+;;  (c-set-style "linux"))
+;;
+;;(add-hook 'c-mode-hook #'my/c-mode-setup)
+;;(add-hook 'c-mode-hook #'eglot-ensure)
+;;
+;;(use-package eglot
+;;  :ensure nil
+;;  :custom
+;;  (eglot-autoshutdown t)
+;;  (eglot-ignored-server-capabilities '(:inlayHintProvider
+;;				       :documentFormattingProvider
+;;				       :documentRangeFormattingProvider
+;;				       :documentOnTypeFormattingProvider)))
+
+;; C
+(setq c-default-style '((c-mode . "linux")
+                        (c++-mode . "linux")
+                        (other . "gnu")))
+(use-package citre
+  :init
+  (require 'citre-config)
+  :config
+  (add-hook 'find-file-hook #'citre-auto-enable-citre-mode))
+
+(electric-pair-mode 1)
+
+(use-package eglot
+  :ensure nil
+  :hook ((c-mode c++-mode) . eglot-ensure)
+  :custom
+  (eglot-autoshutdown t)
+  (eglot-ignored-server-capabilities
+   '(:inlayHintProvider
+     :documentFormattingProvider
+     :documentRangeFormattingProvider
+     :documentOnTypeFormattingProvider))
+  :config
+  (add-to-list
+   'eglot-server-programs
+   '((c-mode c++-mode)
+     . ("clangd"
+        "--background-index"
+        "--header-insertion=never"
+        "--clang-tidy"))))
+
+(add-to-list 'display-buffer-alist
+	     '("\\*compilation\\*"
+	       (display-buffer-reuse-window display-buffer-at-bottom)
+	       (window-height . 0.25)))

@@ -11,10 +11,10 @@ set $right l
 
 # default progs
 set $browser firefox
-set $term foot
+set $term cool-retro-term
 set $menu wmenu-run
 
-set $screenshots_folder ~/pix/screenshots
+set $screenshots_folder ~/media/pics/screenshots
 
 # Output
 
@@ -158,7 +158,7 @@ bindsym $mod+Shift+x mode "$mode_system"
 # Status bar
 
 bar {
-    status_command i3status-rs
+    status_command i3status
 }
 
 # Misc
@@ -167,3 +167,5 @@ include /etc/sway/config.d/*
 
 exec_always kanshi
 exec_always gammastep
+
+seat seat0 xcursor_theme Adwaita 24
